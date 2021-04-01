@@ -2,6 +2,17 @@
   "name": "gitea-axios-client",
   "version": "1.14.1",
   "description": "OpenAPI client for gitea",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "license": "MIT",
+  "readme": "./README.md",
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/milichev/gitea-axios-client.git"
+  },
   "keywords": [
     "gitea",
     "rest",
@@ -13,28 +24,28 @@
     "openapi-client",
     "openapi-generator"
   ],
-  "license": "MIT",
   "author": {
     "name": "Vadym Milichev",
     "email": "vadim.milichev@gmail.com"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/milichev/gitea-axios-client.git"
-  },
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
-  "source": "./src/index.ts",
-  "readme": "./README.md",
   "scripts": {
+    "generate": "yarn clear:temp && yarn clear:src && mkdir temp && yarn generate:docker && yarn generate:move && yarn generate:fix",
+    "generate:docker": "cross-env-shell docker run --rm -v \"$INIT_CWD/swagger.v1.json:/etc/spec.json\" -v \"$INIT_CWD/swagger-codegen-typescript.json:/etc/conf.json\" -v \"$INIT_CWD/.swagger-codegen-ignore:/etc/.swagger-codegen-ignore\" -v \"$INIT_CWD/temp:/tmp/codegen-out\" swaggerapi/swagger-codegen-cli-v3:latest generate -c /etc/conf.json -i /etc/spec.json -l typescript-axios -o /tmp/codegen-out --ignore-file-override=/etc/.swagger-codegen-ignore",
+    "generate:move": "shx cp -R temp/apis src && shx cp -R temp/models src && shx cp temp/*.ts src",
+    "generate:fix": "shx echo \"export * from './models';\">>src/index.ts && shx echo \"export * from './base';\">>src/index.ts",
     "build": "tsc",
-    "prepublishOnly": "npm run build"
+    "clear:dist": "shx rm -rf dist",
+    "clear:src": "shx rm -rf src/apis src/models src/*.ts",
+    "clear:temp": "shx rm -rf temp",
+    "prepublishOnly": "yarn clear:dist && yarn build"
   },
   "peerDependencies": {
     "axios": "^0.21.1"
   },
   "devDependencies": {
     "axios": "^0.21.1",
-    "typescript": "^4.1.5"
+    "cross-env": "^7.0.3",
+    "shx": "^0.3.3",
+    "typescript": "^4.2.3"
   }
 }
